@@ -83,7 +83,34 @@ sudo systemctl enable --now ip3-power-bridge.service
 sudo journalctl -u ip3-power-bridge.service -f
 ```
 
-If you see `state -> Quiet` (or whichever mode you're in), you're done. The HA MQTT discovery topic publishes a `select` entity called `select.minty_ai_workstation_power_profile` (rename the `DEVICE_ID` constant in `bridge/bridge.py` if you want a different identifier).
+If you see `state -> Quiet` (or whichever mode you're in), you're done. The HA MQTT discovery topic publishes a `select` entity called `select.ip3_power_switch_power_profile` (override `DEVICE_ID` and friends in the env file — see [Configuration](#configuration) below).
+
+## Configuration
+
+All identity/branding fields can be overridden via environment variables in `/etc/ip3-power-bridge.env`. Sensible defaults so a fresh install just works:
+
+| Env var | Default | Purpose |
+|---|---|---|
+| `MQTT_USER` | (required) | MQTT broker username |
+| `MQTT_PASS` | (required) | MQTT broker password |
+| `MQTT_BROKER` | `127.0.0.1` | broker hostname/IP |
+| `MQTT_PORT` | `1883` | broker port |
+| `DEVICE_ID` | `ip3_power_switch` | slug used in HA entity_id, MQTT topic, unique_id |
+| `DEVICE_NAME` | `IP3 Power Switch` | friendly device name shown in HA |
+| `DEVICE_MANUFACTURER` | `IP3 Tech` | shown on HA's device page |
+| `DEVICE_MODEL` | `AI Mainboard` | shown on HA's device page |
+| `TOPIC_BASE` | `ip3/$DEVICE_ID` | MQTT topic prefix for state/command/availability |
+
+Example for a Corsair AI Workstation 300:
+
+```bash
+DEVICE_ID=corsair_ai_300
+DEVICE_NAME=Corsair AI Workstation 300
+DEVICE_MANUFACTURER=Corsair
+DEVICE_MODEL=AI Workstation 300
+```
+
+Resulting HA entity: `select.corsair_ai_300_power_profile`.
 
 ---
 

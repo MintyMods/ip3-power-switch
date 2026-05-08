@@ -14,13 +14,13 @@ The bridge publishes an [MQTT discovery](https://www.home-assistant.io/integrati
 | Password | the `MQTT_PASS` from same |
 | Discovery | leave enabled (default) |
 
-Within a second or two of the bridge connecting, you'll see a new device named **Minty-AI Workstation** (rename in `bridge.py` if you like) with a single entity:
+Within a second or two of the bridge connecting, you'll see a new device named **IP3 Power Switch** (rename via `DEVICE_NAME` env var — see the main [Configuration](../README.md#configuration) section) with a single entity:
 
 ```
-select.minty_ai_workstation_power_profile
+select.ip3_power_switch_power_profile
 ```
 
-Options: **Quiet · Balanced · Performance · Mode 4**
+Options: **Quiet · Balanced · Performance · Sustained**
 
 ## Dashboard card
 
@@ -28,7 +28,7 @@ A horizontal pill toggle is the most natural UI for a 3- or 4-way select. Drop t
 
 ```yaml
 type: tile
-entity: select.minty_ai_workstation_power_profile
+entity: select.ip3_power_switch_power_profile
 name: Power profile
 icon: mdi:speedometer
 features_position: bottom
