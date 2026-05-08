@@ -1,0 +1,24 @@
+[Unit]
+Description=IP3POWERSWITCH MQTT bridge for Home Assistant
+After=network-online.target sys-kernel-debug.mount
+Wants=network-online.target
+After=power-profiles-daemon.service
+
+[Service]
+Type=simple
+User=root
+EnvironmentFile=/etc/ip3-power-bridge.env
+ExecStart=/usr/bin/python3 /opt/ip3-power-switch/bridge/bridge.py
+Restart=on-failure
+RestartSec=5
+
+NoNewPrivileges=true
+PrivateTmp=true
+ProtectHome=read-only
+ProtectControlGroups=true
+ProtectKernelModules=true
+# ProtectKernelTunables left ENABLED-DEFAULT (false) on purpose — we write
+# to /sys/kernel/debug/ec/ec0/io which would otherwise be blocked.
+
+[Install]
+WantedBy=multi-user.target

@@ -1,0 +1,300 @@
+            Method (WMAA, 3, NotSerialized)
+            {
+                If ((Arg1 == One))
+                {
+                    Local1 = ToInteger (Arg2)
+                    Local2 = 0xFF
+                    If ((Local1 == One))
+                    {
+                        ^^AMW0.FEBC [Zero] = One
+                        ^^PCI0.SBRG.EC0.FCMI = 0x81
+                        ^^AMW0.FEBC [One] = 0x13
+                        Local2 = Zero
+                    }
+
+                    If ((Local1 == Zero))
+                    {
+                        ^^AMW0.FEBC [Zero] = One
+                        ^^PCI0.SBRG.EC0.FCMI = 0x80
+                        ^^AMW0.FEBC [One] = 0x12
+                        Local2 = Zero
+                    }
+
+                    If ((Local1 == 0x02))
+                    {
+                        ^^AMW0.FEBC [Zero] = One
+                        ^^PCI0.SBRG.EC0.FCMI = 0x82
+                        ^^AMW0.FEBC [One] = 0x11
+                        Local2 = Zero
+                    }
+
+                    If ((Local1 == 0x03))
+                    {
+                        ^^AMW0.FEBC [Zero] = One
+                        ^^PCI0.SBRG.EC0.FCMI = 0x83
+                        ^^AMW0.FEBC [One] = 0x14
+                        Local2 = Zero
+                    }
+
+                    Return (Local2)
+                }
+
+                If ((Arg1 == 0x02))
+                {
+                    Local1 = ^^PCI0.SBRG.EC0.FCMO /* \_SB_.PCI0.SBRG.EC0_.FCMO */
+                    If ((Local1 == Zero))
+                    {
+                        Local2 = Zero
+                    }
+                    ElseIf ((Local1 == One))
+                    {
+                        Local2 = One
+                    }
+                    ElseIf ((Local1 == 0x02))
+                    {
+                        Local2 = 0x02
+                    }
+                    ElseIf ((Local1 == 0x03))
+                    {
+                        Local2 = 0x03
+                    }
+                    Else
+                    {
+                        Local2 = 0xFF
+                    }
+
+                    Return (Local2)
+                }
+
+                If ((Arg1 == 0x03))
+                {
+                    CreateByteField (Arg2, Zero, FANC)
+                    CreateByteField (Arg2, One, FADC)
+                    Local2 = 0xFF
+                    If ((FANC == One))
+                    {
+                        If ((FADC <= 0x65))
+                        {
+                            ^^AMW0.FEBC [Zero] = 0x04
+                            ^^PCI0.SBRG.EC0.FAN1 = Local1 = (0x80 | FADC) /* \_SB_.WMIB.WMAA.FADC */
+                            Local2 = Zero
+                        }
+                        Else
+                        {
+                            Local2 = 0xFF
+                        }
+                    }
+
+                    If ((FANC == 0x02))
+                    {
+                        If ((FADC <= 0x65))
+                        {
+                            ^^AMW0.FEBC [Zero] = 0x04
+                            ^^PCI0.SBRG.EC0.FAN2 = Local1 = (0x80 | FADC) /* \_SB_.WMIB.WMAA.FADC */
+                            Local2 = Zero
+                        }
+                        Else
+                        {
+                            Local2 = 0xFF
+                        }
+                    }
+
+                    Return (Local2)
+                }
+
+                If ((Arg1 == 0x04))
+                {
+                    Local1 = ToInteger (Arg2)
+                    Local2 = Zero
+                    If ((Local1 == One))
+                    {
+                        Local3 = ^^PCI0.SBRG.EC0.FN1H /* \_SB_.PCI0.SBRG.EC0_.FN1H */
+                        Local4 = ^^PCI0.SBRG.EC0.FN1L /* \_SB_.PCI0.SBRG.EC0_.FN1L */
+                        Local5 = ^^PCI0.SBRG.EC0.FN2H /* \_SB_.PCI0.SBRG.EC0_.FN2H */
+                        Local6 = ^^PCI0.SBRG.EC0.FN2L /* \_SB_.PCI0.SBRG.EC0_.FN2L */
+                        Local4 <<= 0x08
+                        Local5 <<= 0x10
+                        Local6 <<= 0x18
+                        Local2 = (Local4 + Local3)
+                        Local2 += Local5
+                        Local2 += Local6
+                    }
+                    Else
+                    {
+                        Local2 = 0x7FFFFFFF
+                    }
+
+                    Return (ToBuffer (Local2))
+                }
+
+                If ((Arg1 == 0x0B))
+                {
+                    Local1 = ToInteger (Arg2)
+                    Local2 = Zero
+                    If ((Local1 == One))
+                    {
+                        Local3 = ^^PCI0.SBRG.EC0.CPUT /* \_SB_.PCI0.SBRG.EC0_.CPUT */
+                        Local4 = ^^PCI0.SBRG.EC0.GPUT /* \_SB_.PCI0.SBRG.EC0_.GPUT */
+                        Local5 = ^^PCI0.SBRG.EC0.CPAD /* \_SB_.PCI0.SBRG.EC0_.CPAD */
+                        Local6 = ^^PCI0.SBRG.EC0.GPAD /* \_SB_.PCI0.SBRG.EC0_.GPAD */
+                        Local4 <<= 0x08
+                        Local5 <<= 0x10
+                        Local6 <<= 0x18
+                        Local2 = (Local4 + Local3)
+                        Local2 += Local5
+                        Local2 += Local6
+                    }
+                    Else
+                    {
+                        Local2 = 0x7FFFFFFF
+                    }
+
+                    Return (ToBuffer (Local2))
+                }
+
+                If ((Arg1 == 0x09))
+                {
+                    CreateByteField (Arg2, Zero, KBFN)
+                    CreateByteField (Arg2, One, KBDS)
+                    Local2 = Zero
+                    If ((KBFN == One))
+                    {
+                        ^^PCI0.SBRG.EC0.KBFC = One
+                        If ((KBDS == Zero))
+                        {
+                            ^^PCI0.SBRG.EC0.KBFL = Zero
+                            Local2 = Zero
+                        }
+                        ElseIf ((KBDS == One))
+                        {
+                            ^^PCI0.SBRG.EC0.KBFL = One
+                            Local2 = Zero
+                        }
+                        Else
+                        {
+                            Local2 = 0xFF
+                        }
+                    }
+
+                    If ((KBFN == 0x02))
+                    {
+                        ^^PCI0.SBRG.EC0.KBFC = One
+                        If ((KBDS == Zero))
+                        {
+                            ^^PCI0.SBRG.EC0.KBX1 = Zero
+                            Local2 = Zero
+                        }
+                        ElseIf ((KBDS == One))
+                        {
+                            ^^PCI0.SBRG.EC0.KBX1 = One
+                            Local2 = Zero
+                        }
+                        Else
+                        {
+                            Local2 = 0xFF
+                        }
+                    }
+
+                    If ((KBFN == 0x03))
+                    {
+                        ^^PCI0.SBRG.EC0.KBFC = One
+                        If ((KBDS == Zero))
+                        {
+                            ^^PCI0.SBRG.EC0.KBX2 = Zero
+                            Local2 = Zero
+                        }
+                        ElseIf ((KBDS == One))
+                        {
+                            ^^PCI0.SBRG.EC0.KBX2 = One
+                            Local2 = Zero
+                        }
+                        Else
+                        {
+                            Local2 = 0xFF
+                        }
+                    }
+
+                    Return (Local2)
+                }
+
+                If ((Arg1 == 0x0A))
+                {
+                    Local1 = ToInteger (Arg2)
+                    Local2 = Zero
+                    If ((Local1 == One))
+                    {
+                        Local3 = ^^PCI0.SBRG.EC0.KBCL /* \_SB_.PCI0.SBRG.EC0_.KBCL */
+                        Local4 = ^^PCI0.SBRG.EC0.KBCH /* \_SB_.PCI0.SBRG.EC0_.KBCH */
+                        Local4 <<= 0x08
+                        Local2 = (Local4 + Local3)
+                    }
+                    Else
+                    {
+                        Local2 = 0x7FFF
+                    }
+
+                    Return (ToBuffer (Local2))
+                }
+
+                If ((Arg1 == 0x0C))
+                {
+                    CreateByteField (Arg2, Zero, SFV0)
+                    CreateByteField (Arg2, One, SFV1)
+                    CreateByteField (Arg2, 0x02, SFV2)
+                    CreateByteField (Arg2, 0x03, SFV3)
+                    Local2 = 0xFF
+                    If ((SFV0 == One))
+                    {
+                        If ((SFV1 == Zero))
+                        {
+                            ^^PCI0.SBRG.EC0.SEF7 = One
+                            ^^PCI0.SBRG.EC0.SEF0 = Zero
+                            Local2 = Zero
+                        }
+                        ElseIf ((SFV1 == One))
+                        {
+                            ^^PCI0.SBRG.EC0.SEF7 = One
+                            ^^PCI0.SBRG.EC0.SEF0 = One
+                            Local2 = Zero
+                        }
+                        Else
+                        {
+                            Local2 = 0xFF
+                        }
+                    }
+                    ElseIf ((SFV0 == 0x02))
+                    {
+                        If ((SFV1 == Zero))
+                        {
+                            ^^PCI0.SBRG.EC0.SEF7 = One
+                            ^^PCI0.SBRG.EC0.SEF1 = Zero
+                            Local2 = Zero
+                        }
+                        ElseIf ((SFV1 == One))
+                        {
+                            ^^PCI0.SBRG.EC0.SEF7 = One
+                            ^^PCI0.SBRG.EC0.SEF1 = One
+                            Local2 = Zero
+                        }
+                        Else
+                        {
+                            Local2 = 0xFF
+                        }
+                    }
+                    ElseIf ((SFV0 == 0x03))
+                    {
+                        If ((SFV1 == Zero))
+                        {
+                            ^^PCI0.SBRG.EC0.SEF7 = One
+                            ^^PCI0.SBRG.EC0.SEF2 = Zero
+                            Local2 = Zero
+                        }
+                        ElseIf ((SFV1 == One))
+                        {
+                            ^^PCI0.SBRG.EC0.SEF7 = One
+                            ^^PCI0.SBRG.EC0.SEF2 = One
+                            Local2 = Zero
+                        }
+                        Else
+                        {
+                            Local2 = 0xFF

@@ -1,0 +1,13 @@
+__pycache__/
+*.py[cod]
+*.egg-info/
+.venv/
+.idea/
+.vscode/
+*.swp
+.DS_Store
+
+# Local snapshots / scratch
+*.bin
+ec_*.bin
+snapshot_*.txt
