@@ -32,13 +32,13 @@ for off in range(len(snaps[0])):
 | EC offset | s1 | s2 | s3 | s4 | Cycle? | What it is |
 |---|---|---|---|---|---|---|
 | `0x31` | 0 | 1 | 2 | 0 | ✓ | **FCMO** — current mode, 0..3 |
-| `0x56` | 2 | 4 | 1 | 2 | ✓ | secondary, likely OSD code or fan-curve index |
-| `0x70` | 33 | 34 | 35 | 36 | counter | press counter — increments every press |
+| `0x56` | 2 | 4 | 1 | 2 | ✓ | secondary, likely OSD code |
+| `0x70` | 33 | 34 | 35 | 36 | drift | **CPUT** (CPU temp) — happened to drift during capture |
 
 Snapshot 4 returns to snapshot 1's mode register because we cycled all
-the way around (3 modes, 3 presses). The press counter at `0x70` keeps
-incrementing — useful as proof the EC is seeing every press even when
-no kernel event surfaces.
+the way around (3 modes, 3 presses).
+
+> **Lesson learned:** the monotonic increment at `0x70` initially looked like a button-press counter, but cross-checking against the DSDT showed it was just `CPUT` — the CPU temperature drifting from 33 °C to 36 °C over the 30 seconds the capture took. **Always validate diff results against the DSDT operation region** before drawing conclusions.
 
 If you're investigating a different IP3 (or other) board, this same
 technique will find the mode register for you in ~5 minutes without

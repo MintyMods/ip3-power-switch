@@ -2,7 +2,7 @@
 
 **Make the front-panel power-profile button work on Linux** for AI mini-PCs built around the IP3 Tech AMD Strix Halo mainboard — including the **Corsair AI Workstation 300**, **Beelink GTR / SER AI**, **GMK EVO-X1 / EVO-X2**, and other rebadges of the same reference design.
 
-> Keywords for search: Corsair AI Workstation 300 Linux, AMD Ryzen AI Max+ 395, Strix Halo Linux fan button, IP3 Tech IP3POWERSWITCH WMI, ACPI WMI 99D89064-8D50-42BB-BEA9-155B2E5D0FCD, EC FCMO FCMI, power-profiles-daemon Strix Halo, Linux Quiet Balanced Performance mode mini PC.
+> Keywords for search: Corsair AI Workstation 300 Linux, AMD Ryzen AI Max+ 395, Strix Halo Linux fan button, IP3 Tech IP3POWERSWITCH WMI, ACPI WMI 99D89064-8D50-42BB-BEA9-155B2E5D0FCD, EC FCMO FCMI, power-profiles-daemon Strix Halo, Linux Quiet Balanced Performance Sustained mode mini PC, home automation, Home Assistant MQTT power profile select.
 
 ---
 
@@ -40,7 +40,7 @@ A Home Assistant `select` entity called **Power profile** with these options:
 | Quiet | 0 | `0x80` | `0x00` | `power-saver` |
 | Balanced | 1 | `0x81` | `0x01` | `balanced` |
 | Performance | 2 | `0x82` | `0x02` | `performance` |
-| Mode 4 | 3 | `0x83` | `0x03` | `performance` (undocumented; appears to exist in firmware only) |
+| Sustained | 3 | `0x83` | `0x03` | `performance` (undocumented mode; characterised — see [research](research/INVESTIGATION.md#step-9--mode-4-the-secret-one)) |
 
 Tap a pill on your dashboard → the EC switches mode, the OS power profile follows. Same effect as pressing the front-panel button on Windows with iCUE.
 
@@ -133,7 +133,8 @@ LICENSE                      MIT
 ## Caveats
 
 - **Tested on Corsair AI Workstation 300** (kernel 6.19, Ubuntu 24.04). The IP3 WMI tree should be identical on the Beelink/GMK/etc. variants but I have not personally confirmed.
-- **Mode 4 is undocumented.** It sets cleanly, the EC accepts it, and the system stays stable. It is *not* the standard "Custom" mode that some IP3 firmwares expose. Do not assume it does anything safe under load until you've measured.
+- **Sustained mode (mode 3) is undocumented but characterised.** Empirically: locks CPU at boost frequency at idle (no C-state sleep) and caps total package power lower than Performance. Useful for low-latency inference, wasteful for idle servers. Full numbers in [research/INVESTIGATION.md](research/INVESTIGATION.md).
+- **Fan RPM is not readable** through the IP3 EC interface on the AI-300 — fans are on Corsair's own (USB-attached) controller which has no Linux driver. Temperatures are still readable; you just can't surface fan tach in HA without iCUE.
 - **Direct EC writes are unsafe in general.** This repo only writes to one specific byte (`EC[0x32]`, `FCMI`) which is the BIOS's intended write target. Do *not* use the same approach to poke arbitrary EC bytes — that can easily brick the system.
 - **No kernel driver.** A proper fix would be a small kernel platform driver subscribing to `8FAFC061-…` and exposing `platform_profile`, like Lenovo's driver does. PRs welcome from anyone with the kernel chops.
 

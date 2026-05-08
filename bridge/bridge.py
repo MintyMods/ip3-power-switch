@@ -49,7 +49,11 @@ MODES = {
     "Quiet":         (0x80, "power-saver"),
     "Balanced":      (0x81, "balanced"),
     "Performance":   (0x82, "performance"),
-    "Mode 4":        (0x83, "performance"),  # undocumented — keep PPD on perf
+    # mode 3 is undocumented and not exposed by the front-panel button.
+    # Empirically: forces high idle freq (no C-state sleep), caps total
+    # package power lower than Performance — useful for low-latency
+    # inference. See research/INVESTIGATION.md.
+    "Sustained":     (0x83, "performance"),
 }
 MODE_LABELS = list(MODES.keys())
 LABEL_BY_FCMO = {i: label for i, label in enumerate(MODE_LABELS)}

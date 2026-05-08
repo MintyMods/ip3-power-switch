@@ -145,10 +145,10 @@ Result:
 | EC offset | s1 | s2 | s3 | s4 | Conclusion |
 |---|---|---|---|---|---|
 | `0x31` (FCMO) | 0 | 1 | 2 | 0 | mode register, cycles 0→1→2→0 |
-| `0x56` | 2 | 4 | 1 | 2 | derived value (likely OSD or fan-curve index) |
-| `0x70` | 33 | 34 | 35 | 36 | press counter — increments every press |
+| `0x56` | 2 | 4 | 1 | 2 | derived value (likely OSD code) |
+| `0x70` (CPUT) | 33 | 34 | 35 | 36 | CPU temperature — coincidental drift across snapshots |
 
-Snapshot 4 returns to snapshot 1's mode value. Confirmed: `0x31` is FCMO, the mode is real.
+Snapshot 4 returns to snapshot 1's mode value. Confirmed: `0x31` is FCMO, the mode is real. (Initially we thought `0x70` was a button-press counter because it incremented monotonically, but the DSDT shows it's `CPUT` — the CPU temperature was just drifting upward during the 30-second capture.)
 
 ## Step 7 — write FCMI and watch FCMO follow
 
@@ -184,7 +184,46 @@ If ((Local1 == 0x03))   // mode 3 — undocumented
 }
 ```
 
-The front-panel button only cycles 0/1/2. Setting mode 3 via FCMI works (FCMO updates to `0x03`), the system stays stable, and idle power dropped slightly in our test (~1 W). What it actually does under sustained load is unconfirmed. Treat as experimental.
+The front-panel button only cycles 0/1/2. Mode 3 (UI label "Sustained") sets cleanly, FCMO follows, system stays stable. We characterised it by running an identical `stress-ng --cpu 32 --timeout 60s` workload in Performance vs Mode 3 and watching CPU freq, k10temp, GPU PPT, and total wall power (via a Hive smart-plug Zigbee sensor in HA's Energy Dashboard).
+
+### Idle behaviour
+
+| Metric | Performance (mode 2) | Mode 4 (mode 3) |
+|---|---|---|
+| CPU frequency at idle | 2000–5136 MHz, frequent dips | 2000–4999 MHz, **stays near boost** |
+| k10temp at idle | 57–60 °C | **79–88 °C** |
+| Wall power at idle | 30 W | 37 W |
+| GPU PPT at idle | 21–24 W | 28–30 W |
+
+### Under sustained 60 s `stress-ng --cpu 32` load
+
+| Metric | Performance | Mode 4 |
+|---|---|---|
+| CPUT peak | 73 °C | 83 °C |
+| k10temp peak | 83 °C | 91 °C |
+| **Wall power peak** | **133 W** | **77 W** |
+| Wall power typical (loaded) | ~76 W | ~17 W (deeper throttling) |
+| CPU freq throttle floor | 600 MHz | 600 MHz |
+
+### Interpretation
+
+Mode 4 is **not** a "Performance Plus" mode. Its observable signature is:
+
+- **Disables CPU idle states / forces high idle freq.** The cores stay near boost even when nothing's running, so idle wakes are near-zero-latency but baseline power is ~7 W higher and idle die temp is ~25 °C higher than Performance.
+- **Caps package power lower under load.** Peaks at ~77 W at the wall vs Performance's ~133 W. Mode 4 throttles harder and more often during sustained 32-thread compute, so total throughput is lower.
+
+Best plain-English label: **Sustained / Low-Latency** — useful when first-token latency matters (real-time inference, audio, kiosk-style workloads) and you don't want power to drop between requests. Wasteful for an idle 24/7 server. Not the mode you want for sustained ML training — Performance is meaningfully faster there.
+
+### Caveat: fan RPM via EC
+
+The DSDT's `WMAA(_, 0x04, _)` reads fan RPM by combining FN1H/FN1L and FN2H/FN2L (EC offsets `0x35-0x38`). On the Corsair AI Workstation 300 these registers read **`0x00` constantly** — even at peak load when k10temp hit 91 °C. Plausible reasons:
+
+- The AI-300 uses an internal AIO liquid loop. Chassis fans aren't on the EC's tachometer inputs; Corsair's own controller drives them.
+- Or the EC firmware on this variant doesn't populate these registers (laptop firmware leftover).
+
+Either way, **fan RPM is not observable through the IP3 EC interface on the AI-300**. The temperatures still are, so Mode characterisation works fine — but if you want to expose fan tach in HA you'll need to find Corsair's controller separately. (The Corsair iCUE link cable on Windows talks to it over USB; on Linux there's no driver.)
+
+Notable side observation: during the entire 5-minute test, the chassis fans remained **silent and inaudible** to the user despite the 91 °C k10temp peak. The AIO loop absorbs the 60-second bursts without ramping fans — fans only spin up under sustained multi-minute heat, not stress-ng-style spikes.
 
 ## Summary
 
